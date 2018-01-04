@@ -62,6 +62,10 @@ Ver 0.30:
 	-minor changes in UI
 	-removed most comments (functions names speaks for themselves)
 	-Used OrderedDicts to make program faster
-	
+
+Ver 0.31:
+    Changes:
+	-Clickable plot to determine point coordinates.
+	-Lightning of loded file.
     
 """
