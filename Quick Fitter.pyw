@@ -612,7 +612,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         yoff = int(self.pixlabel.height())
         ygood = functions.map_an(self.y, 0.125*yoff , 0.875*yoff, y_1, y_0)
 
-        self.textBrowser.setText('x: ' + str(xgood) + ", y: " + str(ygood))
+        self.textBrowser.setText(str(int(xgood)) + ", " + str(int(ygood)))
 
     def savefile(self):
         savename = self.fileNameLineEdit.text()
