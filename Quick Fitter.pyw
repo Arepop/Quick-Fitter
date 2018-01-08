@@ -41,7 +41,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         uic.loadUi(dir_path + "\\a.ui", self)
 
         # Windows options
-        self.setWindowTitle('Quick Fit Ver 0.30')
+        self.setWindowTitle('Quick Fit Ver. 0.32')
 
         # Buttons
         self.clearplotButton.setEnabled(False)
@@ -106,10 +106,12 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
             pass
 
         try:
-
-            self.loadmultifiles(file_name)
-            for button, path, plt_index, name in buttonDict.values():
-                self.connect_load(button, path, plt_index)
+            if file_name.split('.')[-1] == 'csv' or file_name.split('.')[-1] == 'dat':
+                self.createbox(file_name, -1)
+            else:
+                self.loadmultifiles(file_name)
+                for button, path, plt_index, name in buttonDict.values():
+                    self.connect_load(button, path, plt_index)
         except Exception:
             pass
 
@@ -151,21 +153,29 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
                 aa = data.readline()
         except Exception:
             return 0
+
         with open(file, 'r') as data:
             fildat = data.read()
             if len(aa.split("\t")) == 1:
                 if len(aa.split(" ")) == 1:
                     df = pd.read_csv(pd.compat.StringIO(fildat), sep=",")
+                    df = df.apply(pd.to_numeric, errors='coerce')
+                    df = df.dropna()
                 else:
                     df = pd.read_csv(pd.compat.StringIO(fildat), sep=" ")
+                    df = df.apply(pd.to_numeric, errors='coerce')
+                    df = df.dropna()
             else:
                 df = pd.read_csv(pd.compat.StringIO(fildat), sep="\t")
+                df = df.apply(pd.to_numeric, errors='coerce')
+                df = df.dropna()
 
             self.titleLineEdit.setText(os.path.basename(file))
             self.fileNameLineEdit.setText(os.path.basename(file))
-        buttonDict['button'+str(global_plt_index)][3].setStyleSheet('color: black')
-        buttonDict['button'+str(plt_index)][3].setStyleSheet('color: green')
-        global_plt_index = plt_index
+        if plt_index != -1:
+            buttonDict['button'+str(global_plt_index)][3].setStyleSheet('color: black')
+            buttonDict['button'+str(plt_index)][3].setStyleSheet('color: green')
+            global_plt_index = plt_index
         self.reload(False)
         
 
@@ -612,7 +622,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         yoff = int(self.pixlabel.height())
         ygood = functions.map_an(self.y, 0.125*yoff , 0.875*yoff, y_1, y_0)
 
-        self.textBrowser.setText(str(int(xgood)) + ", " + str(int(ygood)))
+        self.textBrowser.setText('x: ' + str(xgood) + ", y: " + str(ygood))
 
     def savefile(self):
         savename = self.fileNameLineEdit.text()
