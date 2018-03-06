@@ -8,6 +8,9 @@ import functions
 import os
 from textwrap import wrap
 from collections import OrderedDict
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+
 
 file_name = ""
 lenax = 0
@@ -17,20 +20,6 @@ boxDict = {}
 buttonDict = {}
 plotDict = OrderedDict()
 fitDict = OrderedDict()
-
-class Label(QtWidgets.QWidget):
-    def __init__(self, parent=None):
-        QWidget.__init__(self, parent=parent)
-        self.p = None
-
-    def setPixmap(self, p):
-        self.p = p
-
-    def paintEvent(self, event):
-        if self.p:
-            painter = QPainter(self)
-            painter.setRenderHint(QPainter.SmoothPixmapTransform)
-            painter.drawPixmap(self.rect(), self.p)
 
 
 class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
@@ -80,11 +69,14 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         self.actionSave_Plot.setEnabled(False)
         self.actionSave_Plot.triggered.connect(self.savefile)
         self.actionReadme.triggered.connect(self.readme)
-
         self.actionLoad_File.triggered.connect(self.loadfile)
-        self.pixlabel.mousePressEvent = self.mouseclicked
 
         # Rest
+        self.figure = plt.figure()
+        self.canvas = FigureCanvas(self.figure)
+        self.toolbar = NavigationToolbar(self.canvas, self)
+        self.verticalLayout_7.addWidget(self.toolbar)
+        self.verticalLayout_7.addWidget(self.canvas)
         self.show()
 
     # Methods definitios
@@ -96,7 +88,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         try:
             file_name, _ \
                 = QtWidgets.QFileDialog.getOpenFileName(self, "Choose file",
-                                                        "", "All Files (*);;" 
+                                                        "", "All Files (*);;"
                                                         "Excel Files ("
                                                         "*.csv)",
                                                         options=options)
@@ -135,7 +127,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
             plt.clf()
 
         else:
-            
+
             lenax = 0
             boxDict.clear()
             fitDict.clear()
@@ -173,11 +165,12 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
             self.titleLineEdit.setText(os.path.basename(file))
             self.fileNameLineEdit.setText(os.path.basename(file))
         if plt_index != -1:
-            buttonDict['button'+str(global_plt_index)][3].setStyleSheet('color: black')
-            buttonDict['button'+str(plt_index)][3].setStyleSheet('color: green')
+            buttonDict['button'+str(global_plt_index)
+                       ][3].setStyleSheet('color: black')
+            buttonDict['button'+str(plt_index)
+                       ][3].setStyleSheet('color: green')
             global_plt_index = plt_index
         self.reload(False)
-        
 
         for idx, column in enumerate(df):
             variable1, variable2 = column + str(1), column + str(2)
@@ -213,7 +206,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
 
                 for idy, columny in enumerate(df):
                     variableplt = str(idx) + str(idy) + "plot" + str(
-                                                                global_plt_index)
+                        global_plt_index)
                     if boxDict[columny + str(2)].isChecked():
                         if self.yLabelLineEdit.text() == "":
                             ylab = columny
@@ -226,7 +219,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
 
                         try:
                             if self.linewidthText.text() == '':
-                                    linew = 2.0
+                                linew = 2.0
                             else:
                                 try:
                                     linew = float(self.linewidthText.text())
@@ -234,11 +227,12 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
                                     linew = 2.0
 
                             if mark[0] == '':
-                                plotDict[variableplt] = plt.plot(pa, pb, ".", linewidth=linew)
+                                plotDict[variableplt] = plt.plot(
+                                    pa, pb, ".", linewidth=linew)
                             else:
                                 mark.append(".")
                                 plotDict[variableplt] = plt.plot(pa, pb, mark[
-                                                                   lenax], linewidth=linew)
+                                    lenax], linewidth=linew)
                                 lenax += 1
                         except Exception:
                             return 0
@@ -250,12 +244,12 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         if self.xLabelLineEdit.text() == "":
             pass
         else:
-            xlab = self.xLabelLineEdit.text()       
+            xlab = self.xLabelLineEdit.text()
 
         if self.yLabelLineEdit.text() == "":
             pass
         else:
-            ylab = self.yLabelLineEdit.text()       
+            ylab = self.yLabelLineEdit.text()
 
         plt.grid(True)
 
@@ -284,14 +278,17 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
             if boxDict[columnx + str(1)].isChecked():
                 for idy, columny in enumerate(df):
                     variablefit = str(idx) + str(idy) + "poly2_fit" + str(
-                                                                global_plt_index)
+                        global_plt_index)
                     if boxDict[columny + str(2)].isChecked():
-                        pa, pb = zip(*[(x,y) for x,y in zip(df[columnx].tolist(), df[columny].tolist()) if x >= x1 and x <= x2])
+                        if variablefit in fitDict:
+                            fitDict[variablefit][0].remove()
+                        pa, pb = zip(*[(x, y) for x, y in zip(df[columnx].tolist(),
+                                                              df[columny].tolist()) if x >= x1 and x <= x2])
                         fit = np.polyfit(pa, pb, 2)
                         pb = [(i**2)*fit[0] + i*fit[1] + fit[2] for i in
                               np.linspace(x1, x2, 1000)]
                         fitDict[variablefit] = plt.plot(np.linspace(x1,
-                                                        x2, 1000), pb, "-",
+                                                                    x2, 1000), pb, "-",
                                                         color="red")
                         self.textBrowser.append("Poly2 fit: " + "A = " +
                                                 str(fit[0]) + ", B = " +
@@ -308,16 +305,19 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         for idx, columnx in enumerate(df):
             if boxDict[columnx + str(1)].isChecked():
                 for idy, columny in enumerate(df):
-                    variablefit = str(idx) + str(idy) + "poly3_fit" + str(
-                                                                global_plt_index)
                     if boxDict[columny + str(2)].isChecked():
-                        pa, pb = zip(*[(x,y) for x,y in zip(df[columnx].tolist(), df[columny].tolist()) if x >= x1 and x <= x2])
+                        variablefit = str(idx) + str(idy) + "poly3_fit" + str(
+                            global_plt_index)
+                        if variablefit in fitDict:
+                            fitDict[variablefit][0].remove()
+                        pa, pb = zip(*[(x, y) for x, y in zip(df[columnx].tolist(),
+                                                              df[columny].tolist()) if x >= x1 and x <= x2])
                         fit = np.polyfit(pa, pb, 3)
                         pb = [(i**3)*fit[0] + (i**2)*fit[1] + i*fit[2]
                               + fit[3] for i in
                               np.linspace(x1, x2, 1000)]
                         fitDict[variablefit] = plt.plot(np.linspace(x1,
-                                                        x2, 1000), pb, "-",
+                                                                    x2, 1000), pb, "-",
                                                         color="red")
                         self.textBrowser.append("Poly3 fit: " + "A = "
                                                 + str(fit[0]) + ", B = "
@@ -336,16 +336,19 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         for idx, columnx in enumerate(df):
             if boxDict[columnx + str(1)].isChecked():
                 for idy, columny in enumerate(df):
-                    variablefit = str(idx) + str(idy) + "line_fit" + str(
-                                                                global_plt_index)
                     if boxDict[columny + str(2)].isChecked():
-                        pa, pb = zip(*[(x,y) for x,y in zip(df[columnx].tolist(), df[columny].tolist()) if x >= x1 and x <= x2])
+                        variablefit = str(idx) + str(idy) + "line_fit" + str(
+                            global_plt_index)
+                        if variablefit in fitDict:
+                            fitDict[variablefit][0].remove()
+                        pa, pb = zip(*[(x, y) for x, y in zip(df[columnx].tolist(),
+                                                              df[columny].tolist()) if x >= x1 and x <= x2])
                         try:
                             fit = np.polyfit(pa, pb, 1)
                             pb = [i*fit[0] + fit[1] for i in
                                   np.linspace(x1, x2, 1000)]
                             fitDict[variablefit] = plt.plot(np.linspace(x1,
-                                                            x2, 1000), pb, 
+                                                                        x2, 1000), pb,
                                                             "-", color="red")
                             self.textBrowser.append("Line fit: "
                                                     + "A = " + str(fit[0])
@@ -363,25 +366,29 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         for idx, columnx in enumerate(df):
             if boxDict[columnx + str(1)].isChecked():
                 for idy, columny in enumerate(df):
-                    variablefit = str(idx) + str(idy) + "gauss_fit" + str(
-                                                                global_plt_index)
                     if boxDict[columny + str(2)].isChecked():
-                        pa, pb = zip(*[(x,y) for x,y in zip(df[columnx].tolist(), df[columny].tolist()) if x >= x1 and x <= x2])
+                        variablefit = str(idx) + str(idy) + "gauss_fit" + str(
+                            global_plt_index)
+                        if variablefit in fitDict:
+                            fitDict[variablefit][0].remove()
+                        pa, pb = zip(*[(x, y) for x, y in zip(df[columnx].tolist(),
+                                                              df[columny].tolist()) if x >= x1 and x <= x2])
                         pstart = [1., 0., 1.]
                         try:
                             coeff, var_matrix = curve_fit(functions.gauss, pa, pb,
-                                                p0=pstart)
+                                                          p0=pstart)
                             fitDict[variablefit] = plt.plot(np.linspace(x1,
                                                                         x2,
                                                                         1000),
                                                             functions.gauss(
-                                        np.linspace(x1, x2, 1000),
-                                        coeff[0], coeff[1], coeff[2]),
-                                    "-", color="red")
+                                np.linspace(x1, x2, 1000),
+                                coeff[0], coeff[1], coeff[2]),
+                                "-", color="red")
                             self.textBrowser.append("Line fit: "
                                                     + "a = " + str(coeff[0])
                                                     + ", mu = " + str(coeff[1])
-                                                    + ", sigma = " + str(coeff[2])
+                                                    + ", sigma = " +
+                                                    str(coeff[2])
                                                     + " for " + str(columnx)
                                                     + " x " + str(columny))
                         except RuntimeError:
@@ -405,28 +412,29 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
 
     def adderrors(self):
         # Ok... This should add an errorbars to plot, but... It have some
-        # bugs still so...        
+        # bugs still so...
         for idx, columnx in enumerate(df):
             for idy, columny in enumerate(df):
-                variableplt = str(idx) + str(idy) + "plot"
+                variableplt = str(idx) + str(idy) + "plot" + str(
+                    global_plt_index)
                 if variableplt in plotDict:
                     if boxDict[columnx + str(1)].isChecked() and boxDict[
-                                                        columny + str(2)
+                        columny + str(2)
                     ].isChecked():
                         xpoint = plotDict[variableplt][0].get_xdata()
                         ypoint = plotDict[variableplt][0].get_ydata()
                         for idxer, columnxer in enumerate(df):
                             if boxDict[columnxer + str(1)].isChecked() and \
-                                    boxDict[columnxer + str(1)] != boxDict[
-                                                columnx + str(1)]:
+                                boxDict[columnxer + str(1)] != boxDict[
+                                    columnx + str(1)]:
                                 xerror = df[columnxer].tolist()
                                 break
                             else:
                                 xerror = 0
                         for idyer, columnyer in enumerate(df):
                             if boxDict[columnyer + str(2)].isChecked() and \
-                                    boxDict[columnyer + str(2)] != boxDict[
-                                            columny + str(2)]:
+                                boxDict[columnyer + str(2)] != boxDict[
+                                    columny + str(2)]:
                                 yerror = df[columnyer].tolist()
                                 break
                             else:
@@ -464,7 +472,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
                                     labels.append("_nolabel_")
                                 try:
                                     if str(idx) + str(idy) + "plot" + str(global_plt_index) in plotDict:
-                                        plotDict[str(idx) + str(idy) + "plot" +     str(global_plt_index)][0].\
+                                        plotDict[str(idx) + str(idy) + "plot" + str(global_plt_index)][0].\
                                             set_label(labels[labidx])
                                         labidx += 1
                                     else:
@@ -484,7 +492,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
                 for elem in fitDict.keys():
                     try:
                         fitDict[elem][0].set_label(labels[
-                                                       labidx])
+                            labidx])
                         labidx += 1
                     except Exception:
                         fitDict[elem][0].set_label("_nolabel_")
@@ -511,19 +519,22 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
                 for idx, line in enumerate(lines):
                     button_var = "button" + str(idx)
                     line = os.path.normpath(line.rstrip())
-                    name = QtWidgets.QLabel("\n".join(wrap(os.path.basename(line), 45)))
+                    name = QtWidgets.QLabel(
+                        "\n".join(wrap(os.path.basename(line), 45)))
                     buttonDict[button_var] = (QtWidgets.QPushButton("Load"),
-                                                                        line, idx, name)
+                                              line, idx, name)
                     buttonDict[button_var][0].setMaximumWidth(50)
                     self.gridLayout_files.addWidget(buttonDict[button_var][0],
-                                                                        idx, 1)
-                    self.gridLayout_files.addWidget(buttonDict[button_var][3],                                                     idx, 0)
-                    self.gridLayoutWidget_2.setGeometry(QtCore.QRect(10, 15, 340, 20 + 42 * idx))
+                                                    idx, 1)
+                    self.gridLayout_files.addWidget(
+                        buttonDict[button_var][3],                                                     idx, 0)
+                    self.gridLayoutWidget_2.setGeometry(
+                        QtCore.QRect(10, 15, 340, 20 + 42 * idx))
                     self.gridLayout_files.setColumnMinimumWidth(0, 240)
                     self.gridLayout_files.setColumnMinimumWidth(1, 65)
                     self.gridLayout_files.setColumnStretch(1, 1)
                     self.scrollAreaWidgetContents_2.setGeometry(
-                    QtCore.QRect(10, 15, 340, 40 + 42 * idx))
+                        QtCore.QRect(10, 15, 340, 40 + 42 * idx))
         except Exception:
             return 0
 
@@ -545,14 +556,14 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
             x1, b = ax.get_xlim()
         finally:
             x1, x2 = ax.get_xlim()
-            ax.set_xlim(x1, b)       
+            ax.set_xlim(x1, b)
         try:
             c = float(self.yminLineEdit.text())
         except Exception:
             c, y2 = ax.get_ylim()
         finally:
             y1, y2 = ax.get_ylim()
-            ax.set_ylim(c, y2)                
+            ax.set_ylim(c, y2)
         try:
             d = float(self.ymaxLineEdit.text())
         except Exception:
@@ -570,7 +581,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         except IndexError as e:
             pass
 
-    def clearallplots(self):         
+    def clearallplots(self):
         for value in plotDict.values():
             value[0].remove()
         for box in boxDict.values():
@@ -578,7 +589,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
                 box.setChecked(False)
 
         plotDict.clear()
-        
+
         self.textBrowser.setText("Cleared")
         self.reloadpictrue()
 
@@ -592,11 +603,10 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
             self.textBrowser.setText("Output: No fits to clear!")
             return 0
 
-
-    def clearallfits(self):         
+    def clearallfits(self):
         for value in fitDict.values():
             value[0].remove()
-        
+
         fitDict.clear()
 
         self.textBrowser.setText("Cleared")
@@ -605,29 +615,12 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
     def reloadpictrue(self):
         plt.savefig(os.path.dirname(
             os.path.realpath(__file__)) + "\\temp.png", dpi=300)
-        pixmap = QtGui.QPixmap(os.path.dirname(
-            os.path.realpath(__file__)) + "\\temp.png")
-        self.pixlabel.setPixmap(pixmap)
-        self.pixlabel.setScaledContents(True)
-        self.pixlabel.show()
-
-    def mouseclicked(self, event):
-        ax = plt.gca()
-        x_0, x_1 = ax.get_xlim()
-        y_0, y_1 = ax.get_ylim()
-        self.x = int(event.x())
-        xoff = int(self.pixlabel.width())
-        xgood = functions.map_an(self.x, 0.125*xoff , 0.875*xoff, x_0, x_1)
-        self.y = int(event.y())
-        yoff = int(self.pixlabel.height())
-        ygood = functions.map_an(self.y, 0.125*yoff , 0.875*yoff, y_1, y_0)
-
-        self.textBrowser.setText('x: ' + str(xgood) + ", y: " + str(ygood))
 
     def savefile(self):
         savename = self.fileNameLineEdit.text()
         pixmap = QtGui.QPixmap("temp.png")
         pixmap.save(savename + ".png", "PNG")
+        self.canvas.draw()
 
     def readme(self):
         try:
@@ -640,4 +633,3 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     GUI = UiWindow()
     sys.exit(app.exec_())
-
