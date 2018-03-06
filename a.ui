@@ -15,7 +15,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_3">
-    <item row="0" column="0">
+    <item row="1" column="1">
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="0" column="0">
        <layout class="QVBoxLayout" name="verticalLayout_8">
@@ -264,32 +264,6 @@
             <item>
              <layout class="QVBoxLayout" name="verticalLayout_4">
               <item>
-               <widget class="QLineEdit" name="xmaxLineEdit">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>x max</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLineEdit" name="ymaxLineEdit">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="text">
-                 <string>y max</string>
-                </property>
-               </widget>
-              </item>
-              <item>
                <widget class="QLineEdit" name="xminLineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -303,6 +277,19 @@
                </widget>
               </item>
               <item>
+               <widget class="QLineEdit" name="xmaxLineEdit">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>x max</string>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="QLineEdit" name="yminLineEdit">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -312,6 +299,19 @@
                 </property>
                 <property name="text">
                  <string>y min</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="ymaxLineEdit">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string>y max</string>
                 </property>
                </widget>
               </item>
@@ -345,7 +345,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>500</width>
+               <width>489</width>
                <height>198</height>
               </rect>
              </property>
@@ -441,7 +441,7 @@
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>500</width>
+               <width>489</width>
                <height>198</height>
               </rect>
              </property>
@@ -468,13 +468,76 @@
       </item>
      </layout>
     </item>
+    <item row="1" column="0">
+     <spacer name="horizontalSpacer_2">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>5</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="1" column="2">
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>5</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="0" column="1">
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>5</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="2" column="1">
+     <spacer name="verticalSpacer_2">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Fixed</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>5</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
    </layout>
-   <zorder>scrollArea</zorder>
-   <zorder>scrollArea_files</zorder>
-   <zorder>titleLineEdit</zorder>
-   <zorder>label_2</zorder>
-   <zorder>horizontalSpacer_2</zorder>
    <zorder></zorder>
+   <zorder>horizontalSpacer</zorder>
+   <zorder>horizontalSpacer_2</zorder>
+   <zorder>verticalSpacer</zorder>
+   <zorder>verticalSpacer_2</zorder>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QMenuBar" name="menuBar">

@@ -2,39 +2,44 @@
 USE PYTHON 3.x.x or 2.7.x
 
 Ver 0.1:
-    Program is used to load file.csv and plot two columns by each other with
+    -Program is used to load file.csv and plot two columns by each other with
     matplotlib.pyplot. 
-    You can chose how many plots will be on image. Fitting not included
+    -You can chose how many plots will be on image. 
+    -Fitting not included
 Ver 0.2:
-    Included fitting line plots with numpy to program with output information
+    -Included fitting line plots with numpy to program with output information
     about fit. 
 Ver 0.21:
-    Added "Clear last plot" button. Included fitting Polynominal of 2nd and 3rd
+    -Added "Clear last plot" button. Included fitting Polynominal of 2nd and 3rd
     degree. Program can be usefule now.
-    Also added temp.jpg as backup file if program fails.
+    -Also added temp.jpg as backup file if program fails.
 Ver 0.22:
-    Added small toolbar. Moved buttons Load and Save to tollbar.
-    Moved Fit Button down. Change names of variables to get
-    code more clear to read. Added comments. Added Set Labels button.
+    -Added small toolbar. Moved buttons Load and Save to tollbar
+    -Moved Fit Button down. Change names of variables to get
+    code more clear to read. Added comments. 
+    -Added Set Labels button.
 Ver 0.23: 
-    Added Gauss fit, changed methods to lower cases. Also cleared code to 
-    almost PEP 8. Set labels don't work correctly. Need to alter that. 
+    -Added Gauss fit, changed methods to lower cases. 
+    -Also cleared code to almost PEP 8. 
+    -Set labels don't work correctly. Need to alter that. 
 Ver 0.24:
-    Adding labels work more correctly. Ploting does no longer clears fits. 
-    Clear fits buttons stoped to work. Need to correct that with fitDict. 
-    Next verions should have commented methods and ideas used in script.
+    -Adding labels work more correctly. 
+    -Ploting does no longer clears fits. 
+    -Clear fits buttons stoped to work. Need to correct that with fitDict. 
+    -Next verions should have commented methods and ideas used in script.
 Ver 0.24a:
-    Added comments. Need to debug code. Really... It has a lot of bugs. 
-    Program sometimes closes, sometimes draw is shit...
+    -Added comments. 
+    -Need to debug code. Really... It has a lot of bugs. 
+    -Program sometimes closes, sometimes draw is shit...
 Ver 0.25:
-    Added set limits button to set limits on plot. Found some errors. Like 
-    after fitting plot stopped working.
+    -Added set limits button to set limits on plot. 
+    -Found some errors, like after fitting, plot stopped working.
 Ver 0.26:
-    Added Errors button. Don't work corectly yet. Fixed most previous bugs. 
-    (Bugs which were created after adding Error button not fixed. Careful 
-    when using). 
+    -Added Errors button. Don't work corectly yet. 
+    -Fixed most previous bugs. 
+    (Bugs which were created after adding Error button not fixed. Careful when using). 
 Ver 0.27:
-    Reads files with separators "space", "tabular" and "coma".
+    -Reads files with separators "space", "tabular" and "coma".
 Ver 0.28:
     Changes:
 	-linewidth option.
@@ -65,11 +70,25 @@ Ver 0.30:
 
 Ver 0.31:
     Changes:
-	-Clickable plot to determine point coordinates.
-	-Lightning of loded file.
+	-Clickable plot to determine point coordinates
+	-Lightning of loded file
 
 Ver 0.32:
     Changes:
-    -Added loading single *.csv file as well as list of *.csv files in txt field.
+    -Added loading single *.csv file as well as list of *.csv files in txt field
+
+Ver 0.33:
+    Changes:
+    -Added loading *.dat data format as well as lists of *.dat
+    -Can load mixed data types in list
+    -Showing plot is now in integrated matplotlib figure instead od QPixmap
+
+Ver 0.34:
+    Changes:
+    -Now you can fit to only zoomed points. Also you don't need to zoom if you
+    want to span partial fit to whole plot you need to write limits in limits 
+    text fields but don't click Set limits button.
+    -Minor changes in UI
+        
     
 """

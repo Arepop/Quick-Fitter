@@ -30,7 +30,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         uic.loadUi(dir_path + "\\a.ui", self)
 
         # Windows options
-        self.setWindowTitle('Quick Fit Ver. 0.32')
+        self.setWindowTitle('Quick Fit Ver. 0.33')
 
         # Buttons
         self.clearplotButton.setEnabled(False)
@@ -273,7 +273,9 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
 
     def fitpoly2(self):
         ax = plt.gca()
-        x1, x2 = ax.get_xlim()
+        x1, x2 = self.getfitlimits()
+        if x1 > x2:
+            x1, x2 = x2, x1
         for idx, columnx in enumerate(df):
             if boxDict[columnx + str(1)].isChecked():
                 for idy, columny in enumerate(df):
@@ -285,6 +287,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
                         pa, pb = zip(*[(x, y) for x, y in zip(df[columnx].tolist(),
                                                               df[columny].tolist()) if x >= x1 and x <= x2])
                         fit = np.polyfit(pa, pb, 2)
+                        x1, x2 = ax.get_xlim()
                         pb = [(i**2)*fit[0] + i*fit[1] + fit[2] for i in
                               np.linspace(x1, x2, 1000)]
                         fitDict[variablefit] = plt.plot(np.linspace(x1,
@@ -296,12 +299,14 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
                                                 ", C = " + str(fit[2]) +
                                                 " for " + str(columnx)
                                                 + " x " + str(columny))
-        ax.set_xlim(x1, x2)
+        ax.set_xlim(ax.get_xlim())
         self.reloadpictrue()
 
     def fitpoly3(self):
         ax = plt.gca()
-        x1, x2 = ax.get_xlim()
+        x1, x2 = self.getfitlimits()
+        if x1 > x2:
+            x1, x2 = x2, x1
         for idx, columnx in enumerate(df):
             if boxDict[columnx + str(1)].isChecked():
                 for idy, columny in enumerate(df):
@@ -313,6 +318,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
                         pa, pb = zip(*[(x, y) for x, y in zip(df[columnx].tolist(),
                                                               df[columny].tolist()) if x >= x1 and x <= x2])
                         fit = np.polyfit(pa, pb, 3)
+                        x1, x2 = ax.get_xlim()
                         pb = [(i**3)*fit[0] + (i**2)*fit[1] + i*fit[2]
                               + fit[3] for i in
                               np.linspace(x1, x2, 1000)]
@@ -327,12 +333,14 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
                                                 + " for "
                                                 + str(columnx)
                                                 + " x " + str(columny))
-        ax.set_xlim(x1, x2)
+        ax.set_xlim(ax.get_xlim())
         self.reloadpictrue()
 
     def fitline(self):
         ax = plt.gca()
-        x1, x2 = ax.get_xlim()
+        x1, x2 = self.getfitlimits()
+        if x1 > x2:
+            x1, x2 = x2, x1
         for idx, columnx in enumerate(df):
             if boxDict[columnx + str(1)].isChecked():
                 for idy, columny in enumerate(df):
@@ -342,8 +350,9 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
                         if variablefit in fitDict:
                             fitDict[variablefit][0].remove()
                         pa, pb = zip(*[(x, y) for x, y in zip(df[columnx].tolist(),
-                                                              df[columny].tolist()) if x >= x1 and x <= x2])
+                                                              df[columny].tolist()) if (x >= x1 and x <= x2)])
                         try:
+                            x1, x2 = ax.get_xlim()
                             fit = np.polyfit(pa, pb, 1)
                             pb = [i*fit[0] + fit[1] for i in
                                   np.linspace(x1, x2, 1000)]
@@ -357,12 +366,14 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
                                                     + " x " + str(columny))
                         except Exception:
                             pass
-        ax.set_xlim(x1, x2)
+        ax.set_xlim(ax.get_xlim())
         self.reloadpictrue()
 
     def gaussfit(self):
         ax = plt.gca()
-        x1, x2 = ax.get_xlim()
+        x1, x2 = self.getfitlimits()
+        if x1 > x2:
+            x1, x2 = x2, x1
         for idx, columnx in enumerate(df):
             if boxDict[columnx + str(1)].isChecked():
                 for idy, columny in enumerate(df):
@@ -377,6 +388,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
                         try:
                             coeff, var_matrix = curve_fit(functions.gauss, pa, pb,
                                                           p0=pstart)
+                            x1, x2 = ax.get_xlim()
                             fitDict[variablefit] = plt.plot(np.linspace(x1,
                                                                         x2,
                                                                         1000),
@@ -394,7 +406,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
                         except RuntimeError:
                             self.textBrowser.setText("Fit not found")
         ax.set_xlim(x1, x2)
-        self.reloadpictrue()
+        self.reloadpictrue(ax.get_xlim())
 
     def fit(self):
         if self.comboBox.currentText() == "Line":
@@ -540,6 +552,23 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
 
     def connect_load(self, button, path, plt_index):
         button.clicked.connect(lambda: self.createbox(path, plt_index))
+
+    def getfitlimits(self):
+        ax = plt.gca()
+        try:
+            a = float(self.xminLineEdit.text())
+        except Exception:
+            a, x2 = ax.get_xlim()
+        finally:
+            x1, x2 = ax.get_xlim()
+        try:
+            b = float(self.xmaxLineEdit.text())
+        except Exception:
+            x1, b = ax.get_xlim()
+        finally:
+            x1, x2 = ax.get_xlim()
+
+        return a, b
 
     def setlimits(self):
         ax = plt.gca()
