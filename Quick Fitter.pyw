@@ -11,11 +11,9 @@ from collections import OrderedDict
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
-
 file_name = ""
 lenax = 0
 abol = True
-global_plt_index = 0
 boxDict = {}
 buttonDict = {}
 plotDict = OrderedDict()
@@ -23,6 +21,8 @@ fitDict = OrderedDict()
 
 
 class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
+    """Main window
+    """
 
     def __init__(self):
         super(UiWindow, self).__init__()
@@ -67,21 +67,27 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
 
         # Tollbar actions
         self.actionSave_Plot.setEnabled(False)
-        self.actionSave_Plot.triggered.connect(self.savefile)
+        self.actionSave_Plot.triggered.connect(self.reloadpictrue)
         self.actionReadme.triggered.connect(self.readme)
         self.actionLoad_File.triggered.connect(self.loadfile)
 
-        # Rest
+        # Matplotlib widgets
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
         self.toolbar = NavigationToolbar(self.canvas, self)
         self.verticalLayout_7.addWidget(self.toolbar)
         self.verticalLayout_7.addWidget(self.canvas)
+
+        # Rest
+        self.global_plt_index = 0
         self.show()
 
     # Methods definitios
 
     def loadfile(self):
+        """Load selected file
+        """
+
         global file_name
         options = QtWidgets.QFileDialog.Options()
         options |= QtWidgets.QFileDialog.DontUseNativeDialog
@@ -98,7 +104,8 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
             pass
 
         try:
-            if file_name.split('.')[-1] == 'csv' or file_name.split('.')[-1] == 'dat':
+            if file_name.split('.')[-1] == 'csv' or file_name.split(
+                    '.')[-1] == 'dat':
                 self.createbox(file_name, -1)
             else:
                 self.loadmultifiles(file_name)
@@ -108,6 +115,12 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
             pass
 
     def reload(self, x=True):
+        """Clears information of last loaded file
+
+        Keyword Arguments:
+            x {bool} -- True: Clears dicts and plots,
+                        False: Clears only check boxes.(default: {True})
+        """
 
         if x:
             while self.gridLayout.count():
@@ -138,8 +151,13 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
                     child.widget().deleteLater()
 
     def createbox(self, file, plt_index):
-        global df
-        global global_plt_index
+        """Create checkboxes
+
+        Arguments:
+            file {dat, csv, txt} -- Open file with data
+            plt_index {int} -- track the list of files
+        """
+
         try:
             with open(file, 'r') as data:
                 aa = data.readline()
@@ -150,38 +168,30 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
             fildat = data.read()
             if len(aa.split("\t")) == 1:
                 if len(aa.split(" ")) == 1:
-                    df = pd.read_csv(pd.compat.StringIO(fildat), sep=",")
-                    df = df.apply(pd.to_numeric, errors='coerce')
-                    df = df.dropna()
+                    self.load_df(fildat, sep=",")
                 else:
-                    df = pd.read_csv(pd.compat.StringIO(fildat), sep=" ")
-                    df = df.apply(pd.to_numeric, errors='coerce')
-                    df = df.dropna()
+                    self.load_df(fildat, sep=" ")
             else:
-                df = pd.read_csv(pd.compat.StringIO(fildat), sep="\t")
-                df = df.apply(pd.to_numeric, errors='coerce')
-                df = df.dropna()
+                self.load_df(fildat, sep="\t")
 
             self.titleLineEdit.setText(os.path.basename(file))
             self.fileNameLineEdit.setText(os.path.basename(file))
         if plt_index != -1:
-            buttonDict['button'+str(global_plt_index)
-                       ][3].setStyleSheet('color: black')
-            buttonDict['button'+str(plt_index)
-                       ][3].setStyleSheet('color: green')
-            global_plt_index = plt_index
+            buttonDict[f'button{self.global_plt_index}'][3].setStyleSheet(
+                'color: black')
+            buttonDict[f'button{plt_index}'][3].setStyleSheet('color: green')
+            self.global_plt_index = plt_index
         self.reload(False)
 
-        for idx, column in enumerate(df):
+        for idx, column in enumerate(self.df):
             variable1, variable2 = column + str(1), column + str(2)
-            boxDict[variable1] = QtWidgets.QCheckBox("",
-                                                     self.gridLayoutWidget)
+            boxDict[variable1] = QtWidgets.QCheckBox("", self.gridLayoutWidget)
             boxDict[variable2] = QtWidgets.QCheckBox(column,
                                                      self.gridLayoutWidget)
             self.gridLayout.addWidget(boxDict[variable1], idx + 2, 0)
             self.gridLayout.addWidget(boxDict[variable2], idx + 2, 1)
-            self.gridLayoutWidget.setGeometry(QtCore.QRect(5, 24, 320,
-                                                           18 * (idx + 2)))
+            self.gridLayoutWidget.setGeometry(
+                QtCore.QRect(5, 24, 320, 18 * (idx + 2)))
             self.gridLayout.setColumnMinimumWidth(10, 0)
             self.gridLayout.setColumnStretch(1, 1)
             self.scrollAreaWidgetContents.setGeometry(
@@ -189,24 +199,37 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
 
         self.plotButton.setEnabled(True)
 
+    def load_df(self, fildat, sep):
+        """Loads data with different separators
+
+        Arguments:
+            fildat {file} -- File to load
+            sep {str} -- separator used in file
+        """
+
+        self.df = pd.read_csv(pd.compat.StringIO(fildat), sep=sep)
+        self.df = self.df.apply(pd.to_numeric, errors='coerce')
+        self.df = self.df.dropna()
+
     def plotcolumns(self):
+        """Take chceck boxes and make plots of them
+        """
 
         mark = [l.strip(" ") for l in self.markersLineEdit.text().split(",")]
         global lenax
         lenax = 0
 
-        for idx, columnx in enumerate(df):
+        for idx, columnx in enumerate(self.df):
             if boxDict[columnx + str(1)].isChecked():
-                pa = df[columnx].tolist()
+                pa = self.df[columnx].tolist()
 
                 if self.xLabelLineEdit.text() == "":
                     xlab = columnx
                 else:
                     xlab = self.xLabelLineEdit.text()
 
-                for idy, columny in enumerate(df):
-                    variableplt = str(idx) + str(idy) + "plot" + str(
-                        global_plt_index)
+                for idy, columny in enumerate(self.df):
+                    variableplt = f'{idx}{idy}plot{self.global_plt_index}'
                     if boxDict[columny + str(2)].isChecked():
                         if self.yLabelLineEdit.text() == "":
                             ylab = columny
@@ -215,7 +238,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
 
                         if variableplt in plotDict:
                             continue
-                        pb = df[columny].tolist()
+                        pb = self.df[columny].tolist()
 
                         try:
                             if self.linewidthText.text() == '':
@@ -231,8 +254,8 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
                                     pa, pb, ".", linewidth=linew)
                             else:
                                 mark.append(".")
-                                plotDict[variableplt] = plt.plot(pa, pb, mark[
-                                    lenax], linewidth=linew)
+                                plotDict[variableplt] = plt.plot(
+                                    pa, pb, mark[lenax], linewidth=linew)
                                 lenax += 1
                         except Exception:
                             return 0
@@ -272,143 +295,143 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         self.errorBarButton.setEnabled(True)
 
     def fitpoly2(self):
+        """Fits polynominal of 2nd degree to chosen data points
+        """
+
         ax = plt.gca()
         x1, x2 = self.getfitlimits()
         if x1 > x2:
             x1, x2 = x2, x1
-        for idx, columnx in enumerate(df):
+        for idx, columnx in enumerate(self.df):
             if boxDict[columnx + str(1)].isChecked():
-                for idy, columny in enumerate(df):
-                    variablefit = str(idx) + str(idy) + "poly2_fit" + str(
-                        global_plt_index)
+                for idy, columny in enumerate(self.df):
+                    variablefit = f'{idx}{idy}poly2_fit{self.global_plt_index}'
                     if boxDict[columny + str(2)].isChecked():
                         if variablefit in fitDict:
                             fitDict[variablefit][0].remove()
-                        pa, pb = zip(*[(x, y) for x, y in zip(df[columnx].tolist(),
-                                                              df[columny].tolist()) if x >= x1 and x <= x2])
+                        pa, pb = zip(*[(x, y) for x, y in zip(
+                            self.df[columnx].tolist(), self.df[columny].tolist())
+                            if x >= x1 and x <= x2])
                         fit = np.polyfit(pa, pb, 2)
                         x1, x2 = ax.get_xlim()
-                        pb = [(i**2)*fit[0] + i*fit[1] + fit[2] for i in
-                              np.linspace(x1, x2, 1000)]
-                        fitDict[variablefit] = plt.plot(np.linspace(x1,
-                                                                    x2, 1000), pb, "-",
-                                                        color="red")
-                        self.textBrowser.append("Poly2 fit: " + "A = " +
-                                                str(fit[0]) + ", B = " +
-                                                str(fit[1]) +
-                                                ", C = " + str(fit[2]) +
-                                                " for " + str(columnx)
-                                                + " x " + str(columny))
+                        pb = [(i**2) * fit[0] + i * fit[1] + fit[2]
+                              for i in np.linspace(x1, x2, 1000)]
+                        fitDict[variablefit] = plt.plot(
+                            np.linspace(x1, x2, 1000), pb, "-", color="red")
+                        self.textBrowser.append(
+                            f'Poly2 fit: {columnx} x {columny}\nA={fit[0]}\nB={fit[1]}\nC={fit[2]}\n')
         ax.set_xlim(ax.get_xlim())
         self.reloadpictrue()
 
     def fitpoly3(self):
+        """Fits polynominal of 3rd degree to chosen data points
+        """
         ax = plt.gca()
         x1, x2 = self.getfitlimits()
         if x1 > x2:
             x1, x2 = x2, x1
-        for idx, columnx in enumerate(df):
+        for idx, columnx in enumerate(self.df):
             if boxDict[columnx + str(1)].isChecked():
-                for idy, columny in enumerate(df):
+                for idy, columny in enumerate(self.df):
                     if boxDict[columny + str(2)].isChecked():
-                        variablefit = str(idx) + str(idy) + "poly3_fit" + str(
-                            global_plt_index)
+                        variablefit = f'{idx}{idy}poly3_fit{self.global_plt_index}'
                         if variablefit in fitDict:
                             fitDict[variablefit][0].remove()
-                        pa, pb = zip(*[(x, y) for x, y in zip(df[columnx].tolist(),
-                                                              df[columny].tolist()) if x >= x1 and x <= x2])
+                        pa, pb = zip(*[(x, y) for x, y in zip(
+                            self.df[columnx].tolist(), self.df[columny].tolist())
+                            if x >= x1 and x <= x2])
                         fit = np.polyfit(pa, pb, 3)
                         x1, x2 = ax.get_xlim()
-                        pb = [(i**3)*fit[0] + (i**2)*fit[1] + i*fit[2]
-                              + fit[3] for i in
-                              np.linspace(x1, x2, 1000)]
-                        fitDict[variablefit] = plt.plot(np.linspace(x1,
-                                                                    x2, 1000), pb, "-",
-                                                        color="red")
-                        self.textBrowser.append("Poly3 fit: " + "A = "
-                                                + str(fit[0]) + ", B = "
-                                                + str(fit[1]) +
-                                                ", C = " + str(fit[2])
-                                                + ", D = " + str(fit[3])
-                                                + " for "
-                                                + str(columnx)
-                                                + " x " + str(columny))
+                        pb = [(i**3) * fit[0] +
+                              (i**2) * fit[1] + i * fit[2] + fit[3]
+                              for i in np.linspace(x1, x2, 1000)]
+                        fitDict[variablefit] = plt.plot(
+                            np.linspace(x1, x2, 1000), pb, "-", color="red")
+                        self.textBrowser.append(
+                            f'Poly2 fit: {columnx} x {columny}\nA={fit[0]}\nB={fit[1]}\nC={fit[2]}\nD={fit[3]}\n')
         ax.set_xlim(ax.get_xlim())
         self.reloadpictrue()
 
     def fitline(self):
+        """Fits polynominal of 1st degree to chosen data points
+        """
         ax = plt.gca()
         x1, x2 = self.getfitlimits()
         if x1 > x2:
             x1, x2 = x2, x1
-        for idx, columnx in enumerate(df):
+        for idx, columnx in enumerate(self.df):
             if boxDict[columnx + str(1)].isChecked():
-                for idy, columny in enumerate(df):
+                for idy, columny in enumerate(self.df):
                     if boxDict[columny + str(2)].isChecked():
                         variablefit = str(idx) + str(idy) + "line_fit" + str(
-                            global_plt_index)
+                            self.global_plt_index)
                         if variablefit in fitDict:
                             fitDict[variablefit][0].remove()
-                        pa, pb = zip(*[(x, y) for x, y in zip(df[columnx].tolist(),
-                                                              df[columny].tolist()) if (x >= x1 and x <= x2)])
+                        pa, pb = zip(*[(x, y) for x, y in zip(
+                            self.df[columnx].tolist(), self.df[columny].tolist())
+                            if (x >= x1 and x <= x2)])
                         try:
                             x1, x2 = ax.get_xlim()
                             fit = np.polyfit(pa, pb, 1)
-                            pb = [i*fit[0] + fit[1] for i in
-                                  np.linspace(x1, x2, 1000)]
-                            fitDict[variablefit] = plt.plot(np.linspace(x1,
-                                                                        x2, 1000), pb,
-                                                            "-", color="red")
-                            self.textBrowser.append("Line fit: "
-                                                    + "A = " + str(fit[0])
-                                                    + ", B = " + str(fit[1])
-                                                    + " for " + str(columnx)
-                                                    + " x " + str(columny))
+                            pb = [
+                                i * fit[0] + fit[1]
+                                for i in np.linspace(x1, x2, 1000)
+                            ]
+                            fitDict[variablefit] = plt.plot(
+                                np.linspace(x1, x2, 1000),
+                                pb,
+                                "-",
+                                color="red")
+                            self.textBrowser.append(
+                                f'Line fit: {columnx} x {columny}\nA={fit[0]}\nB={fit[1]}\n')
                         except Exception:
                             pass
         ax.set_xlim(ax.get_xlim())
         self.reloadpictrue()
 
     def gaussfit(self):
+        """fits Gaussian to data plots
+        """
+
         ax = plt.gca()
         x1, x2 = self.getfitlimits()
         if x1 > x2:
             x1, x2 = x2, x1
-        for idx, columnx in enumerate(df):
+        for idx, columnx in enumerate(self.df):
             if boxDict[columnx + str(1)].isChecked():
-                for idy, columny in enumerate(df):
+                for idy, columny in enumerate(self.df):
                     if boxDict[columny + str(2)].isChecked():
                         variablefit = str(idx) + str(idy) + "gauss_fit" + str(
-                            global_plt_index)
+                            self.global_plt_index)
                         if variablefit in fitDict:
                             fitDict[variablefit][0].remove()
-                        pa, pb = zip(*[(x, y) for x, y in zip(df[columnx].tolist(),
-                                                              df[columny].tolist()) if x >= x1 and x <= x2])
+                        pa, pb = zip(*[(x, y) for x, y in zip(
+                            self.df[columnx].tolist(), self.df[columny].tolist())
+                            if x >= x1 and x <= x2])
                         pstart = [1., 0., 1.]
                         try:
-                            coeff, var_matrix = curve_fit(functions.gauss, pa, pb,
-                                                          p0=pstart)
+                            coeff, var_matrix = curve_fit(
+                                functions.gauss, pa, pb, p0=pstart)
                             x1, x2 = ax.get_xlim()
-                            fitDict[variablefit] = plt.plot(np.linspace(x1,
-                                                                        x2,
-                                                                        1000),
-                                                            functions.gauss(
+                            fitDict[variablefit] = plt.plot(
                                 np.linspace(x1, x2, 1000),
-                                coeff[0], coeff[1], coeff[2]),
-                                "-", color="red")
-                            self.textBrowser.append("Line fit: "
-                                                    + "a = " + str(coeff[0])
-                                                    + ", mu = " + str(coeff[1])
-                                                    + ", sigma = " +
-                                                    str(coeff[2])
-                                                    + " for " + str(columnx)
-                                                    + " x " + str(columny))
+                                functions.gauss(
+                                    np.linspace(x1, x2, 1000), coeff[0],
+                                    coeff[1], coeff[2]),
+                                "-",
+                                color="red")
+                            self.textBrowser.append(
+                                f'Gauss fit: {columnx} x {columny}\na = {coeff[0]}\nmu = {coeff[1]}\nsigma ={coeff[2]}')
                         except RuntimeError:
                             self.textBrowser.setText("Fit not found")
-        ax.set_xlim(x1, x2)
-        self.reloadpictrue(ax.get_xlim())
+                            return 0
+        ax.set_xlim(ax.get_xlim())
+        self.reloadpictrue()
 
     def fit(self):
+        """What to fit window options
+        """
+
         if self.comboBox.currentText() == "Line":
             self.fitline()
         elif self.comboBox.currentText() == "Polynominal (2)":
@@ -423,31 +446,32 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         self.clearallButton.setEnabled(True)
 
     def adderrors(self):
-        # Ok... This should add an errorbars to plot, but... It have some
-        # bugs still so...
-        for idx, columnx in enumerate(df):
-            for idy, columny in enumerate(df):
+        """Ok... This should add an errorbars to plot, but... It have some
+        bugs still so...
+        """
+
+        for idx, columnx in enumerate(self.df):
+            for idy, columny in enumerate(self.df):
                 variableplt = str(idx) + str(idy) + "plot" + str(
-                    global_plt_index)
+                    self.global_plt_index)
                 if variableplt in plotDict:
-                    if boxDict[columnx + str(1)].isChecked() and boxDict[
-                        columny + str(2)
-                    ].isChecked():
+                    if boxDict[columnx + str(1)].isChecked(
+                    ) and boxDict[columny + str(2)].isChecked():
                         xpoint = plotDict[variableplt][0].get_xdata()
                         ypoint = plotDict[variableplt][0].get_ydata()
-                        for idxer, columnxer in enumerate(df):
+                        for idxer, columnxer in enumerate(self.df):
                             if boxDict[columnxer + str(1)].isChecked() and \
                                 boxDict[columnxer + str(1)] != boxDict[
                                     columnx + str(1)]:
-                                xerror = df[columnxer].tolist()
+                                xerror = self.df[columnxer].tolist()
                                 break
                             else:
                                 xerror = 0
-                        for idyer, columnyer in enumerate(df):
+                        for idyer, columnyer in enumerate(self.df):
                             if boxDict[columnyer + str(2)].isChecked() and \
                                 boxDict[columnyer + str(2)] != boxDict[
                                     columny + str(2)]:
-                                yerror = df[columnyer].tolist()
+                                yerror = self.df[columnyer].tolist()
                                 break
                             else:
                                 yerror = 0
@@ -468,6 +492,9 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         self.reloadpictrue()
 
     def addlabels(self):
+        """Adds labels to plots and fits
+        """
+
         labidx = 0
         global abol
         ax = plt.gca()
@@ -475,16 +502,17 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         labels = [l.strip(" ") for l in labels]
         if abol:
             abol = not abol
-            for idx, columnx in enumerate(df):
+            for idx, columnx in enumerate(self.df):
                 if boxDict[columnx + str(1)].isChecked():
-                    for idy, columny in enumerate(df):
+                    for idy, columny in enumerate(self.df):
                         if boxDict[columny + str(2)].isChecked():
                             if self.labelsLineEdit.text() != '':
                                 if len(labels) == labidx:
                                     labels.append("_nolabel_")
                                 try:
-                                    if str(idx) + str(idy) + "plot" + str(global_plt_index) in plotDict:
-                                        plotDict[str(idx) + str(idy) + "plot" + str(global_plt_index)][0].\
+                                    if str(idx) + str(idy) + "plot" + str(
+                                            self.global_plt_index) in plotDict:
+                                        plotDict[str(idx) + str(idy) + "plot" + str(self.global_plt_index)][0].\
                                             set_label(labels[labidx])
                                         labidx += 1
                                     else:
@@ -495,7 +523,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
 
                             else:
                                 try:
-                                    plotDict[str(idx) + str(idy) + "plot" + str(global_plt_index)][0].\
+                                    plotDict[str(idx) + str(idy) + "plot" + str(self.global_plt_index)][0].\
                                         set_label('_nolabel_')
                                 except TypeError:
                                     pass
@@ -503,8 +531,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
             try:
                 for elem in fitDict.keys():
                     try:
-                        fitDict[elem][0].set_label(labels[
-                            labidx])
+                        fitDict[elem][0].set_label(labels[labidx])
                         labidx += 1
                     except Exception:
                         fitDict[elem][0].set_label("_nolabel_")
@@ -525,35 +552,58 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         self.reloadpictrue()
 
     def loadmultifiles(self, file):
+        """Method used for load a txt file with list of files to load
+        
+        Arguments:
+            file {file} -- txt file to load
+        
+        Returns:
+            none -- none
+        """
+
         try:
             with open(file, 'r') as data:
                 lines = data.readlines()
                 for idx, line in enumerate(lines):
                     button_var = "button" + str(idx)
                     line = os.path.normpath(line.rstrip())
-                    name = QtWidgets.QLabel(
-                        "\n".join(wrap(os.path.basename(line), 45)))
+                    name = QtWidgets.QLabel("\n".join(
+                        wrap(os.path.basename(line), 45)))
                     buttonDict[button_var] = (QtWidgets.QPushButton("Load"),
                                               line, idx, name)
                     buttonDict[button_var][0].setMaximumWidth(50)
                     self.gridLayout_files.addWidget(buttonDict[button_var][0],
                                                     idx, 1)
-                    self.gridLayout_files.addWidget(
-                        buttonDict[button_var][3],                                                     idx, 0)
+                    self.gridLayout_files.addWidget(buttonDict[button_var][3],
+                                                    idx, 0)
                     self.gridLayoutWidget_2.setGeometry(
                         QtCore.QRect(10, 15, 340, 20 + 42 * idx))
                     self.gridLayout_files.setColumnMinimumWidth(0, 240)
                     self.gridLayout_files.setColumnMinimumWidth(1, 65)
                     self.gridLayout_files.setColumnStretch(1, 1)
                     self.scrollAreaWidgetContents_2.setGeometry(
-                        QtCore.QRect(10, 15, 340, 40 + 42 * idx))
+                        QtCore.QRect(10, 15, 340, 48 + 42 * idx))
         except Exception:
             return 0
 
     def connect_load(self, button, path, plt_index):
+        """Connects self.createbox(path, plt_index) method to buttons for loading a file.
+        
+        Arguments:
+            button {QtButton} -- Button to load a file
+            path {str} -- path to file
+            plt_index {int} -- tracking a button number
+        """
+
         button.clicked.connect(lambda: self.createbox(path, plt_index))
 
     def getfitlimits(self):
+        """As in method name
+        
+        Returns:
+            int -- None
+        """             
+
         ax = plt.gca()
         try:
             a = float(self.xminLineEdit.text())
@@ -571,6 +621,9 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         return a, b
 
     def setlimits(self):
+        """Set limits of plot
+        """
+
         ax = plt.gca()
         try:
             a = float(self.xminLineEdit.text())
@@ -603,6 +656,9 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         self.reloadpictrue()
 
     def clearplot(self):
+        """Remove lest plotet figure
+        """
+
         try:
             list(plotDict.values())[-1][0].remove()
             plotDict.popitem(last=True)
@@ -611,6 +667,9 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
             pass
 
     def clearallplots(self):
+        """Remove all figures and uncheck checked boxes
+        """
+
         for value in plotDict.values():
             value[0].remove()
         for box in boxDict.values():
@@ -623,6 +682,12 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         self.reloadpictrue()
 
     def clearfit(self):
+        """Same as self.clearplot
+        
+        Returns:
+            int -- 0
+        """
+
         try:
             list(fitDict.values())[-1][0].remove()
             fitDict.popitem(last=True)
@@ -633,6 +698,9 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
             return 0
 
     def clearallfits(self):
+        """Same as self.clearallplots
+        """
+
         for value in fitDict.values():
             value[0].remove()
 
@@ -642,16 +710,18 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         self.reloadpictrue()
 
     def reloadpictrue(self):
-        plt.savefig(os.path.dirname(
-            os.path.realpath(__file__)) + "\\temp.png", dpi=300)
+        """Reload vieved pictrue
+        """
 
-    def savefile(self):
-        savename = self.fileNameLineEdit.text()
-        pixmap = QtGui.QPixmap("temp.png")
-        pixmap.save(savename + ".png", "PNG")
+        plt.savefig(
+            os.path.dirname(os.path.realpath(__file__)) + "\\temp.png",
+            dpi=300)
         self.canvas.draw()
 
     def readme(self):
+        """Opend readme file
+        """
+
         try:
             os.startfile("readme.txt")
         except Exception:
