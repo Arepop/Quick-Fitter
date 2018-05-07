@@ -191,11 +191,11 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
             self.gridLayout.addWidget(boxDict[variable1], idx + 2, 0)
             self.gridLayout.addWidget(boxDict[variable2], idx + 2, 1)
             self.gridLayoutWidget.setGeometry(
-                QtCore.QRect(5, 24, 320, 18 * (idx + 2)))
+                QtCore.QRect(5, 24, 320, 20 * (idx + 2)))
             self.gridLayout.setColumnMinimumWidth(10, 0)
             self.gridLayout.setColumnStretch(1, 1)
             self.scrollAreaWidgetContents.setGeometry(
-                QtCore.QRect(0, 0, 320, 39 + 18 * (idx + 2)))
+                QtCore.QRect(0, 0, 320, 39 + 20 * (idx + 2)))
 
         self.plotButton.setEnabled(True)
 
@@ -553,10 +553,10 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
 
     def loadmultifiles(self, file):
         """Method used for load a txt file with list of files to load
-        
+
         Arguments:
             file {file} -- txt file to load
-        
+
         Returns:
             none -- none
         """
@@ -588,7 +588,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
 
     def connect_load(self, button, path, plt_index):
         """Connects self.createbox(path, plt_index) method to buttons for loading a file.
-        
+
         Arguments:
             button {QtButton} -- Button to load a file
             path {str} -- path to file
@@ -599,10 +599,10 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
 
     def getfitlimits(self):
         """As in method name
-        
+
         Returns:
             int -- None
-        """             
+        """
 
         ax = plt.gca()
         try:
@@ -683,7 +683,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
 
     def clearfit(self):
         """Same as self.clearplot
-        
+
         Returns:
             int -- 0
         """

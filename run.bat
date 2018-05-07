@@ -1,3 +1,3 @@
-start pythonw "Quick Fitter.pyw"
+start pythonw "quickfitter.pyw"
 sleep 10
 exit 0

@@ -61,14 +61,14 @@
 					"|"	vline
 					"_"	hline 
 		Avilable colors:	
-					'b' blue
-					'g' green
-					'r' read
-					'c' cyan
-					'm' magneta 
-					'y' yellow
-					'k' black
-					'w' white
+					'b' 	blue
+					'g' 	green
+					'r' 	red
+					'c' 	cyan
+					'm' 	magneta 
+					'y' 	yellow
+					'k' 	black
+					'w' 	white
 		To change marker and corol write colorsymbol markersymbol without any spaces between them. For every plot markers must be separated by coma. 
 		To change marker of plot you need to clear plot and plot it again.
 		Line width: In pixels. Works only when marker is "-".
