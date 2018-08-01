@@ -31,6 +31,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
 
         # Windows options
         self.setWindowTitle('Quick Fit Ver. 0.33')
+        self.setWindowIcon(QtGui.QIcon("favicon.png"))
 
         # Buttons
         self.clearplotButton.setEnabled(False)
