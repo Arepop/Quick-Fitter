@@ -31,7 +31,6 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
 
         # Windows options
         self.setWindowTitle('Quick Fit Ver. 0.33')
-        self.setWindowIcon(QtGui.QIcon("favicon.png"))
 
         # Buttons
         self.clearplotButton.setEnabled(False)
@@ -119,7 +118,7 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         """Clears information of last loaded file
 
         Keyword Arguments:
-            x {bool} -- True: Clears dicts and plots,
+            x {bool} -- True: Clears dicts and plots
                         False: Clears only check boxes.(default: {True})
         """
 
@@ -167,13 +166,14 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
 
         with open(file, 'r') as data:
             fildat = data.read()
-            if len(aa.split("\t")) == 1:
-                if len(aa.split(" ")) == 1:
-                    self.load_df(fildat, sep=",")
-                else:
-                    self.load_df(fildat, sep=" ")
-            else:
+            if len(aa.split("\t")) > 1:
                 self.load_df(fildat, sep="\t")
+            elif len(aa.split(" ")) > 1:
+                self.load_df(fildat, sep=",")
+            elif len(aa.split(";")) > 1:
+                self.load_df(fildat, sep=";")
+            elif len(aa.split(" ")) > 1:
+                self.load_df(fildat, sep=" ")
 
             self.titleLineEdit.setText(os.path.basename(file))
             self.fileNameLineEdit.setText(os.path.basename(file))
@@ -187,16 +187,16 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         for idx, column in enumerate(self.df):
             variable1, variable2 = column + str(1), column + str(2)
             boxDict[variable1] = QtWidgets.QCheckBox("", self.gridLayoutWidget)
-            boxDict[variable2] = QtWidgets.QCheckBox(column,
+            boxDict[variable2] = QtWidgets.QCheckBox(str(column),
                                                      self.gridLayoutWidget)
             self.gridLayout.addWidget(boxDict[variable1], idx + 2, 0)
             self.gridLayout.addWidget(boxDict[variable2], idx + 2, 1)
             self.gridLayoutWidget.setGeometry(
-                QtCore.QRect(5, 24, 320, 20 * (idx + 2)))
+                QtCore.QRect(5, 24, 320, 18 * (idx + 2)))
             self.gridLayout.setColumnMinimumWidth(10, 0)
             self.gridLayout.setColumnStretch(1, 1)
             self.scrollAreaWidgetContents.setGeometry(
-                QtCore.QRect(0, 0, 320, 39 + 20 * (idx + 2)))
+                QtCore.QRect(0, 0, 320, 39 + 18 * (idx + 2)))
 
         self.plotButton.setEnabled(True)
 
@@ -591,8 +591,10 @@ class UiWindow(QtWidgets.QMainWindow, QtWidgets.QWidget):
         """Connects self.createbox(path, plt_index) method to buttons for loading a file.
 
         Arguments:
-            button {QtButton} -- Button to load a file
+            button {``QtButton} -- Button to load a file
+
             path {str} -- path to file
+
             plt_index {int} -- tracking a button number
         """
 
